@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Among Us Replica - Single Player</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-container">
+            <div id="top-bar">
+                <div id="player-info">
+                    <span>Player: <span id="player-name">Red</span></span>
+                </div>
+                <div id="task-counter">
+                    <span>Tasks: <span id="completed-tasks">0</span>/<span id="total-tasks">5</span></span>
+                </div>
+            </div>
+            <div id="interaction-panel">
+                <div id="interaction-text"></div>
+                <button id="interact-btn" class="hidden">Press E</button>
+            </div>
+            <div id="minimap-container">
+                <canvas id="minimapCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/crewmate.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

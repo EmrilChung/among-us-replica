@@ -1,0 +1,150 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #1a1a2e;
+    overflow: hidden;
+    color: #fff;
+}
+
+#game-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    position: relative;
+}
+
+#gameCanvas {
+    display: block;
+    background-color: #0f0f1e;
+    flex: 1;
+}
+
+#ui-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#ui-container > * {
+    pointer-events: auto;
+}
+
+/* Top Bar */
+#top-bar {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 40px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 100;
+}
+
+#player-info {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border-left: 4px solid #ff0000;
+}
+
+#task-counter {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border-left: 4px solid #00ff00;
+}
+
+/* Interaction Panel */
+#interaction-panel {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 20px 30px;
+    border-radius: 12px;
+    border: 2px solid #00ffff;
+    text-align: center;
+    min-width: 300px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 50;
+}
+
+#interaction-panel.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#interaction-text {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #00ffff;
+}
+
+#interact-btn {
+    background-color: #00ff00;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#interact-btn:hover {
+    background-color: #00dd00;
+    transform: scale(1.05);
+}
+
+#interact-btn.hidden {
+    display: none;
+}
+
+/* Minimap */
+#minimap-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00ff00;
+    border-radius: 8px;
+    padding: 5px;
+    z-index: 40;
+}
+
+#minimapCanvas {
+    display: block;
+    background-color: #0a0a14;
+    border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #top-bar {
+        top: 10px;
+        padding: 0 20px;
+        font-size: 14px;
+    }
+
+    #player-info,
+    #task-counter {
+        padding: 8px 15px;
+    }
+
+    #minimap-container {
+        bottom: 10px;
+        right: 10px;
+    }
+}
