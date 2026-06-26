@@ -16,14 +16,21 @@ class Game {
         this.map = new GameMap(this.canvas);
         this.player = new Crewmate(100, 400, 'Red', CONFIG.PLAYER_COLOR);
         this.npcs = [];
+        this.allPlayers = [];
         this.keys = {};
-        this.gameState = 'playing'; // playing, paused, gameover
+        this.gameState = 'playing'; // playing, gameover_crewmate_win, gameover_impostor_win
+        this.isPlayerImpostor = false;
+        this.deadBodies = [];
+        this.reportCooldown = 0;
 
         // Initialize player tasks
         TASKS.forEach(task => this.player.addTask(task));
 
         // Spawn NPCs
         this.spawnNPCs();
+
+        // Setup all players array
+        this.allPlayers = [this.player, ...this.npcs];
 
         // Event listeners
         this.setupEventListeners();
@@ -51,12 +58,37 @@ class Game {
             );
             this.npcs.push(npc);
         }
+
+        // Randomly assign impostor role
+        const impostorIndex = Math.floor(Math.random() * this.allPlayers.length);
+        const impostor = this.allPlayers[impostorIndex];
+        impostor.isImpostor = true;
+
+        // Set player as impostor or not
+        this.isPlayerImpostor = this.player.isImpostor;
+
+        // Give tasks to crewmates only
+        this.npcs.forEach(npc => {
+            if (!npc.isImpostor) {
+                TASKS.forEach(task => npc.addTask(task));
+            }
+        });
     }
 
     // Setup keyboard and mouse listeners
     setupEventListeners() {
         window.addEventListener('keydown', (e) => {
             this.keys[e.key] = true;
+
+            // Kill hotkey (K) - only for impostors
+            if (e.key.toLowerCase() === 'k' && this.isPlayerImpostor && this.player.isAlive) {
+                this.attemptKill();
+            }
+
+            // Report hotkey (R) - for everyone
+            if (e.key.toLowerCase() === 'r' && this.player.isAlive && this.reportCooldown <= 0) {
+                this.reportDeadBody();
+            }
         });
 
         window.addEventListener('keyup', (e) => {
@@ -69,6 +101,71 @@ class Game {
         });
     }
 
+    // Attempt to kill a nearby player
+    attemptKill() {
+        if (this.player.killCooldown > 0) return;
+
+        for (let npc of this.npcs) {
+            if (npc.isAlive) {
+                if (this.player.kill(npc)) {
+                    console.log(`Killed ${npc.name}!`);
+                    return;
+                }
+            }
+        }
+    }
+
+    // Report dead body
+    reportDeadBody() {
+        if (this.gameState !== 'playing') return;
+        
+        this.reportCooldown = CONFIG.REPORT_COOLDOWN;
+        console.log('Emergency meeting called!');
+        // In future: trigger emergency meeting UI
+    }
+
+    // Check win conditions
+    checkWinConditions() {
+        const aliveCrewmates = this.allPlayers.filter(p => p.isAlive && !p.isImpostor).length;
+        const aliveImpostors = this.allPlayers.filter(p => p.isAlive && p.isImpostor).length;
+        const completedTasks = this.allPlayers
+            .filter(p => !p.isImpostor && p.isAlive)
+            .reduce((sum, p) => sum + p.completedTasks, 0);
+        const totalCrew = this.allPlayers.filter(p => !p.isImpostor).length;
+        const totalTasks = TASKS.length * totalCrew;
+
+        // Impostors win if they equal or outnumber crewmates
+        if (aliveImpostors >= aliveCrewmates && aliveCrewmates > 0) {
+            this.gameState = 'gameover_impostor_win';
+            this.showGameOver(this.isPlayerImpostor ? '🎉 YOU WIN! Impostors victory!' : '☠️ YOU LOSE! Impostors won!');
+            return true;
+        }
+
+        // Crewmates win if all impostors are dead
+        if (aliveImpostors === 0 && aliveCrewmates > 0) {
+            this.gameState = 'gameover_crewmate_win';
+            this.showGameOver(this.isPlayerImpostor ? '☠️ YOU LOSE! All impostors eliminated!' : '🎉 YOU WIN! All impostors eliminated!');
+            return true;
+        }
+
+        // Crewmates win if all tasks are completed
+        if (completedTasks >= totalTasks && aliveCrewmates > 0) {
+            this.gameState = 'gameover_crewmate_win';
+            this.showGameOver(this.isPlayerImpostor ? '☠️ YOU LOSE! Tasks completed!' : '🎉 YOU WIN! All tasks completed!');
+            return true;
+        }
+
+        return false;
+    }
+
+    // Show game over screen
+    showGameOver(message) {
+        const panel = document.getElementById('interaction-panel');
+        const text = document.getElementById('interaction-text');
+        text.innerHTML = `<h2>${message}</h2><p>Refresh to play again</p>`;
+        panel.classList.add('active');
+    }
+
     // Update game state
     update() {
         if (this.gameState !== 'playing') return;
@@ -77,10 +174,25 @@ class Game {
         this.player.update(this.keys, this.map);
 
         // Update NPCs
-        this.npcs.forEach(npc => npc.update(this.map));
+        this.npcs.forEach(npc => {
+            npc.update(this.map);
+
+            // Update impostor behavior
+            if (npc.isImpostor) {
+                npc.updateImpostorBehavior(this.allPlayers);
+            }
+        });
+
+        // Update cooldowns
+        if (this.reportCooldown > 0) {
+            this.reportCooldown--;
+        }
 
         // Update UI
         this.updateUI();
+
+        // Check for win conditions
+        this.checkWinConditions();
     }
 
     // Render everything
@@ -100,6 +212,40 @@ class Game {
 
         // Draw minimap
         this.renderMinimap();
+
+        // Draw kill indicator
+        if (this.isPlayerImpostor && this.player.isAlive) {
+            this.drawKillCooldown();
+        }
+    }
+
+    // Draw kill cooldown indicator
+    drawKillCooldown() {
+        const cooldownPercent = 1 - (this.player.killCooldown / CONFIG.KILL_COOLDOWN);
+        const x = 20;
+        const y = this.canvas.height - 60;
+        const width = 100;
+        const height = 30;
+
+        // Background
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(x, y, width, height);
+
+        // Border
+        this.ctx.strokeStyle = '#ff0000';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(x, y, width, height);
+
+        // Cooldown fill
+        this.ctx.fillStyle = '#ff0000';
+        this.ctx.fillRect(x, y, width * cooldownPercent, height);
+
+        // Text
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = 'bold 12px Arial';
+        this.ctx.textAlign = 'center';
+        const text = this.player.killCooldown > 0 ? 'KILL' : 'READY';
+        this.ctx.fillText(text, x + width / 2, y + height / 2 + 5);
     }
 
     // Render minimap
@@ -138,14 +284,22 @@ class Game {
 
         // Draw NPCs on minimap
         this.npcs.forEach(npc => {
-            ctx.fillStyle = npc.color;
+            if (npc.isAlive) {
+                ctx.fillStyle = npc.color;
+            } else {
+                ctx.fillStyle = CONFIG.DEAD_COLOR;
+            }
             ctx.beginPath();
             ctx.arc(npc.x * scaleX, npc.y * scaleY, 3, 0, Math.PI * 2);
             ctx.fill();
         });
 
         // Draw player on minimap
-        ctx.fillStyle = this.player.color;
+        if (this.player.isAlive) {
+            ctx.fillStyle = this.player.color;
+        } else {
+            ctx.fillStyle = CONFIG.DEAD_COLOR;
+        }
         ctx.beginPath();
         ctx.arc(this.player.x * scaleX, this.player.y * scaleY, 4, 0, Math.PI * 2);
         ctx.fill();
@@ -157,11 +311,13 @@ class Game {
     // Update UI elements
     updateUI() {
         document.getElementById('completed-tasks').textContent = this.player.completedTasks;
-        document.getElementById('total-tasks').textContent = TASKS.length;
+        document.getElementById('total-tasks').textContent = this.player.isImpostor ? '—' : TASKS.length;
+
+        const playerStatus = this.isPlayerImpostor ? '🔴 IMPOSTOR' : '🟢 CREWMATE';
+        document.getElementById('player-info').innerHTML = `<span>Role: ${playerStatus} | ${this.player.name}</span>`;
 
         const currentRoom = this.player.getCurrentRoom(this.map);
-        if (currentRoom) {
-            // Check for nearby NPCs or tasks
+        if (currentRoom && this.player.isAlive) {
             this.updateInteractionPanel();
         }
     }
@@ -175,14 +331,27 @@ class Game {
         let interactionText_str = '';
         let hasInteraction = false;
 
-        // Check for tasks in current room
-        const availableTask = TASKS.find(t => t.room === currentRoom.id);
-        if (availableTask) {
-            const playerTask = this.player.tasks.find(t => t.id === availableTask.id);
-            if (playerTask && !playerTask.completed) {
-                interactionText_str = `Complete: ${availableTask.name}`;
-                hasInteraction = true;
+        if (!this.isPlayerImpostor) {
+            // Check for tasks in current room
+            const availableTask = TASKS.find(t => t.room === currentRoom.id);
+            if (availableTask) {
+                const playerTask = this.player.tasks.find(t => t.id === availableTask.id);
+                if (playerTask && !playerTask.completed) {
+                    interactionText_str = `Complete: ${availableTask.name} (E to interact)`;
+                    hasInteraction = true;
+                }
             }
+        } else {
+            // Impostor interactions
+            const cooldownText = this.player.killCooldown > 0 ? ` (${Math.ceil(this.player.killCooldown / 16)}s)` : ' (READY)';
+            interactionText_str = `Press K to Kill${cooldownText}`;
+            hasInteraction = true;
+        }
+
+        // Show kill range for impostor
+        if (this.isPlayerImpostor && this.player.isAlive) {
+            interactionText_str = `Kill Range: ${CONFIG.KILL_RANGE}px | Press K${this.player.killCooldown > 0 ? ' (cooling down)' : ' to Kill'}`;
+            hasInteraction = true;
         }
 
         if (hasInteraction) {

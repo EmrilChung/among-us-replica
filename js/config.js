@@ -14,6 +14,8 @@ const CONFIG = {
     ROOM_BORDER_COLOR: '#00ff00',
     DOOR_COLOR: '#ffaa00',
     VENTILATION_COLOR: '#ff00ff',
+    IMPOSTOR_COLOR: '#ff0000',
+    DEAD_COLOR: '#808080',
     
     // UI
     MINIMAP_WIDTH: 150,
@@ -22,10 +24,14 @@ const CONFIG = {
     // Game
     TOTAL_TASKS: 5,
     INTERACTION_DISTANCE: 60,
+    KILL_COOLDOWN: 15000, // 15 seconds between kills
+    KILL_RANGE: 50,
+    REPORT_COOLDOWN: 30000, // 30 seconds between emergency calls
     
     // NPCs
     NPC_COLORS: ['#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff69b4'],
     NPC_COUNT: 3,
+    IMPOSTOR_COUNT: 1,
     
     // Rooms
     ROOMS: [
