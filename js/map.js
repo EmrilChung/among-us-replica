@@ -7,7 +7,6 @@ class GameMap {
         this.doors = CONFIG.DOORS;
     }
 
-    // Render all rooms
     renderRooms() {
         this.rooms.forEach(room => {
             this.renderRoom(room);
@@ -15,18 +14,14 @@ class GameMap {
         this.renderDoors();
     }
 
-    // Render a single room
     renderRoom(room) {
-        // Draw room background
         this.ctx.fillStyle = CONFIG.ROOM_COLOR;
         this.ctx.fillRect(room.x, room.y, room.width, room.height);
 
-        // Draw room border
         this.ctx.strokeStyle = CONFIG.ROOM_BORDER_COLOR;
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(room.x, room.y, room.width, room.height);
 
-        // Draw room name
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = 'bold 14px Arial';
         this.ctx.textAlign = 'center';
@@ -37,7 +32,6 @@ class GameMap {
         );
     }
 
-    // Render doors between rooms
     renderDoors() {
         this.doors.forEach(door => {
             const fromRoom = this.rooms.find(r => r.id === door.from);
@@ -56,7 +50,6 @@ class GameMap {
         });
     }
 
-    // Get room at position
     getRoomAtPosition(x, y) {
         return this.rooms.find(
             room => x >= room.x && x <= room.x + room.width &&
@@ -64,12 +57,10 @@ class GameMap {
         );
     }
 
-    // Check if position is valid (inside a room)
     isValidPosition(x, y) {
         return this.getRoomAtPosition(x, y) !== undefined;
     }
 
-    // Keep position within room bounds
     constrainPosition(x, y, size) {
         const room = this.getRoomAtPosition(x, y);
         if (!room) return { x, y };

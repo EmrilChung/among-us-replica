@@ -16,7 +16,6 @@ class Crewmate {
         this.killCooldown = 0;
     }
 
-    // Update position based on input
     update(keys, map) {
         if (!this.isAlive) return;
 
@@ -44,18 +43,15 @@ class Crewmate {
         let newX = this.x + this.vx;
         let newY = this.y + this.vy;
 
-        // Constrain to room bounds
         const constrained = map.constrainPosition(newX, newY, this.size);
         this.x = constrained.x;
         this.y = constrained.y;
 
-        // Update kill cooldown
         if (this.killCooldown > 0) {
             this.killCooldown--;
         }
     }
 
-    // Render the crewmate
     render(ctx) {
         if (!this.isAlive) {
             this.renderDead(ctx);
@@ -64,19 +60,16 @@ class Crewmate {
 
         const renderColor = this.color;
 
-        // Draw body
         ctx.fillStyle = renderColor;
         ctx.beginPath();
         ctx.arc(this.x, this.y - 5, this.size / 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw head
         ctx.fillStyle = renderColor;
         ctx.beginPath();
         ctx.arc(this.x, this.y - 20, this.size / 2.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw eyes
         ctx.fillStyle = '#000000';
         ctx.beginPath();
         ctx.arc(this.x - 8, this.y - 22, 3, 0, Math.PI * 2);
@@ -85,14 +78,12 @@ class Crewmate {
         ctx.arc(this.x + 8, this.y - 22, 3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw backpack
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(this.x - 12, this.y + 8, 24, 18);
         ctx.strokeStyle = renderColor;
         ctx.lineWidth = 2;
         ctx.strokeRect(this.x - 12, this.y + 8, 24, 18);
 
-        // Draw impostor indicator (glowing red outline)
         if (this.isImpostor) {
             ctx.strokeStyle = '#ff0000';
             ctx.lineWidth = 3;
@@ -101,16 +92,13 @@ class Crewmate {
             ctx.stroke();
         }
 
-        // Draw name
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 12px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(this.name, this.x, this.y + 35);
     }
 
-    // Render dead crewmate
     renderDead(ctx) {
-        // Draw ghostly body
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = CONFIG.DEAD_COLOR;
         ctx.beginPath();
@@ -122,7 +110,6 @@ class Crewmate {
         ctx.arc(this.x, this.y - 20, this.size / 2.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw skull
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
@@ -130,19 +117,16 @@ class Crewmate {
 
         ctx.globalAlpha = 1.0;
 
-        // Draw name
         ctx.fillStyle = CONFIG.DEAD_COLOR;
         ctx.font = 'bold 10px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(this.name, this.x, this.y + 35);
     }
 
-    // Get current room
     getCurrentRoom(map) {
         return map.getRoomAtPosition(this.x, this.y);
     }
 
-    // Add task
     addTask(task) {
         this.tasks.push({
             ...task,
@@ -152,7 +136,6 @@ class Crewmate {
         });
     }
 
-    // Complete a task
     completeTask(taskId) {
         const task = this.tasks.find(t => t.id === taskId);
         if (task && !task.completed) {
@@ -163,7 +146,6 @@ class Crewmate {
         return false;
     }
 
-    // Kill nearby player
     kill(target) {
         if (!this.isImpostor || this.killCooldown > 0 || !target.isAlive) {
             return false;
@@ -182,24 +164,21 @@ class Crewmate {
     }
 }
 
-// NPC Crewmate (AI controlled)
 class NPCCrewmate extends Crewmate {
     constructor(x, y, name, color) {
         super(x, y, name, color);
         this.targetX = x;
         this.targetY = y;
         this.wanderTimer = 0;
-        this.wanderInterval = Math.random() * 3000 + 2000; // 2-5 seconds
+        this.wanderInterval = Math.random() * 3000 + 2000;
     }
 
-    // Update NPC behavior
     update(map) {
         if (!this.isAlive) return;
 
         this.wanderTimer++;
 
         if (this.wanderTimer > this.wanderInterval) {
-            // Pick a random new target
             const room = map.getRoomAtPosition(this.x, this.y);
             if (room) {
                 this.targetX = room.x + Math.random() * room.width;
@@ -209,7 +188,6 @@ class NPCCrewmate extends Crewmate {
             this.wanderInterval = Math.random() * 3000 + 2000;
         }
 
-        // Move towards target
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -231,13 +209,11 @@ class NPCCrewmate extends Crewmate {
         this.x = constrained.x;
         this.y = constrained.y;
 
-        // Update kill cooldown
         if (this.killCooldown > 0) {
             this.killCooldown--;
         }
     }
 
-    // Impostor AI: try to kill nearby players
     updateImpostorBehavior(players) {
         if (!this.isImpostor || !this.isAlive) return;
 

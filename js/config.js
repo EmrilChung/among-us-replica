@@ -24,9 +24,9 @@ const CONFIG = {
     // Game
     TOTAL_TASKS: 5,
     INTERACTION_DISTANCE: 60,
-    KILL_COOLDOWN: 15000, // 15 seconds between kills
+    KILL_COOLDOWN: 15000,
     KILL_RANGE: 50,
-    REPORT_COOLDOWN: 30000, // 30 seconds between emergency calls
+    REPORT_COOLDOWN: 30000,
     
     // NPCs
     NPC_COLORS: ['#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff69b4'],
@@ -59,7 +59,6 @@ const CONFIG = {
     ],
 };
 
-// Task definitions
 const TASKS = [
     { id: 1, name: 'Submit Scan', room: 'med-bay', duration: 5000 },
     { id: 2, name: 'Start Reactor', room: 'reactor', duration: 5000 },
@@ -68,7 +67,6 @@ const TASKS = [
     { id: 5, name: 'Prime Shields', room: 'upper-engine', duration: 6000 },
 ];
 
-// Vents for NPCs
 const VENTS = [
     { room: 'upper-engine', x: 200, y: 100 },
     { room: 'lower-engine', x: 100, y: 600 },

@@ -35,7 +35,6 @@ body {
     pointer-events: auto;
 }
 
-/* Top Bar */
 #top-bar {
     position: absolute;
     top: 20px;
@@ -62,7 +61,6 @@ body {
     border-left: 4px solid #00ff00;
 }
 
-/* Interaction Panel */
 #interaction-panel {
     position: absolute;
     bottom: 120px;
@@ -102,47 +100,6 @@ body {
     color: #aaaaaa;
 }
 
-#interact-btn {
-    background-color: #00ff00;
-    color: #000;
-    border: none;
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-#interact-btn:hover {
-    background-color: #00dd00;
-    transform: scale(1.05);
-}
-
-#interact-btn.hidden {
-    display: none;
-}
-
-/* Controls Panel */
-#controls-panel {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 2px solid #00ffff;
-    border-radius: 8px;
-    padding: 15px 20px;
-    font-size: 13px;
-    max-width: 300px;
-    z-index: 40;
-}
-
-#controls-text {
-    line-height: 1.6;
-    color: #00ffff;
-}
-
-/* Minimap */
 #minimap-container {
     position: absolute;
     bottom: 20px;
@@ -160,7 +117,6 @@ body {
     border-radius: 6px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     #top-bar {
         top: 10px;
@@ -176,12 +132,5 @@ body {
     #minimap-container {
         bottom: 10px;
         right: 10px;
-    }
-
-    #controls-panel {
-        bottom: 10px;
-        left: 10px;
-        font-size: 11px;
-        padding: 10px 15px;
     }
 }
